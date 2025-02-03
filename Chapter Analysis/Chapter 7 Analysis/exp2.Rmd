@@ -1,0 +1,432 @@
+---
+title: "Experiment 2"
+author: "Christopher M. Federico"
+date: "08/25/2023"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+## Results for Experiment 2
+
+Experiment 2 reverses (and expands) the logic of Experiment 1.
+Experiment 2 replicates the finding that the effect of authoritarianism
+on GOP preference is reduced when respondents are faced with a choice
+where one of the candidates takes a party-incongruent stand on a social
+issue. The baseline again presents a combination of background
+biographical information and partisanship.
+
+With this baseline, the idea is to establish the relationship between
+authoritarianism and candidate preference that exists on the basis of
+partisan cues alone. There are four treatment conditions that present
+the same party and biographical information, but also differing
+information about the signature issues of the candidates. The positions
+taken by the Democratic candidate are always be party-congruent (with
+the issue position varying across treatments), while the positions taken
+by the Republican candidate are always party incongruent (with the issue
+position differing across conditions):
+
+-   control: party only
+-   treatment 1: party + econ liberal D, social liberal R (immigration)
+-   treatment 2: party + econ liberal D, social liberal R (LGBT/gender)
+-   treatment 3: party + social liberal D (immigration), econ liberal R
+-   treatment 4: party + social liberal D (LGBT/gender), econ liberal R
+
+If things work as they did in Experiment 1, then we should expect a
+positive relationship between authoritarianism and GOP preference in the
+control and in any treatment where the Republican candidate DOES NOT
+take a socially-liberal position. In contrast, the relationship between
+authoritarianism and GOP preference should be weakened relative to the
+control in treatments where the Republican candidate DOES take a
+socially-liberal positions.
+
+So, we would expect roughly similar positive relationships between
+authoritarianism and GOP preference in the control, treatment 3, and
+treatment 4, and a null or reduced-magnitude relationship between
+authoritarianism and GOP preference (relative to control) in treatment 1
+and treatment 2.
+
+Beyond these basic predictions, Experiment 2 builds in an exploratory
+element. Specifically, comparison between treatments 2 and 3 will allow
+us to see whether immigration or LGBT issue defection is more
+off-putting to authoritarians (or whether they are similarly
+off-putting).
+
+Load in preliminaries and coded data:
+
+```{r message=FALSE}
+
+#### packages.
+library(car)
+library(psych)
+library(ggplot2)
+library(sandwich)
+library(expss)
+library(summarytools)
+library(tidyverse)
+library(dotwhisker)
+library(lmtest)
+library(huxtable)
+library(haven)
+library(interactions)
+
+################################################################################
+######### utility functions
+
+std01<-function(x){
+  min.x<-min(x, na.rm=T)
+  max.x<-max(x-min.x, na.rm=T)
+  return((x-min.x)/max.x)
+}
+rsumm<-function(x){
+  descr(x, stats='common', transpose=T)
+}
+tab<-function(x){
+  freq(as_factor(x))
+}
+
+################################################################################
+######### persistent Weber ggplot() theme
+
+ggtheme = theme(
+  plot.title=element_text(face="bold",hjust=0,vjust=0,colour="#3C3C3C",size=20),
+  axis.text.x=element_text(size=16,colour="#535353",face="bold"),
+  axis.text.y=element_text(size=16,colour="#535353",face="bold"),
+  axis.title = element_text(size=16,colour="#535353",face="bold"),
+  axis.title.y=element_text(size=16,colour="#535353",face="bold",vjust=1.5),
+  axis.ticks=element_blank(),
+  strip.text.x = element_text(size = 16),
+  panel.grid.major=element_line(colour="#D0D0D0",size=.25),
+  panel.background=element_rect(fill="white"),
+  legend.text=element_text(size=14),
+  legend.title=element_text(size=16)) 
+
+################################################################################
+
+##### load Rdata if coded and saved previously
+load("wff2.Rdata") 
+
+```
+
+Subset to white respondents who passed manipulation checks (N=1140):
+
+```{r message=FALSE}
+
+###### subset to white respondents
+wdata<-subset(data, white==1 & bc1==1 & sc1==1)
+
+```
+
+Worth nothing that authoritarianism forms a reliable scale:
+
+```{r message=FALSE}
+
+psych::alpha(with(wdata, cbind(aut1, aut2, aut3, aut4, aut5, aut6, aut7, aut8)))
+
+```
+
+## Vote choice model fit and conditional effects
+
+Here is the setup of the conditions:
+
+-   control = party only
+-   treat1 = party + social lib R, econ lib D (immig)
+-   treat2 = party + social lib R, econ lib D (LGBT)
+-   treat3 = party + econ lib R, social lib D (immig)
+-   treat4 = party + econ lib R, social lib D (LGBT)
+
+Here, we see more or less what we expected. There is a clear positive
+relation between authoritarianism and Republican vote preference in the
+control condition, and this remains more or less the same in the
+conditions where the Republican is NOT socially liberal. However, the
+effect of authoritarianism drops in the conditions where the Republican
+is socially liberal:
+
+```{r message=FALSE}
+
+# fit
+m1 <- lm(rvc ~ female+age+rinc+college+jewish+cath+other+raut*cond, data=wdata)
+coeftest(m1, vcovHC(m1, type = "HC3"))
+
+# conditional effects
+sim_margins(m1, pred = raut, modx = cond, robust=T) 
+
+```
+
+Plotting this:
+
+```{r message=FALSE, fig.width=11, fig.height=8}
+
+interact_plot(m1, pred = raut, 
+                    modx = cond,
+                    modx.labels=c("Party Only", 
+                                  "Party + Soc Lib R, Econ Lib D\n(Immigration)", 
+                                  "Party + Soc Lib R, Econ Lib D\n(LGBTQ)",
+                                  "Party + Econ Lib R, Soc Lib D\n(Immigration)",
+                                  "Party + Econ Lib R, Soc Lib D\n(LGBTQ)"), 
+                    interval = TRUE,
+                    robust=T, 
+                    legend.main = "Condition",
+                    data = wdata) + 
+  ggtheme +
+  scale_y_continuous(breaks=seq(0,1,0.2), limits=c(0, 1)) + 
+  scale_x_continuous(breaks=seq(0,1,0.2)) + 
+  theme(aspect.ratio=1, 
+        plot.title = element_text(hjust = 0.5)) +  
+  labs(title = "Candidate Support by Condition (Linear)",
+       x = "Authoritarianism",
+       y = "Support for Republican Candidate")
+
+```
+
+## Feeling thermometer difference model fit and conditional effects
+
+The second analysis used the Republican candidate FT minus the
+Democratic candidate FT (with the difference score recoded 0-1) as the
+dependent measure.
+
+The results are more or less the same as above, but a bit more clearly
+consistent with our predictions:
+
+```{r message=FALSE}
+
+# fit
+m2 <- lm(ftdif ~ female+age+rinc+college+jewish+cath+other+raut*cond, 
+         data=wdata)
+coeftest(m2, vcovHC(m2, type = "HC3"))
+
+# conditional effects
+sim_margins(m2, pred = raut, modx = cond, robust=T) 
+
+```
+
+Plotting this:
+
+```{r message=FALSE, fig.width=11, fig.height=8}
+
+interact_plot(m2, pred = raut, 
+                    modx = cond,
+                    modx.labels=c("Party Only", 
+                                  "Party + Soc Lib R, Econ Lib D\n(Immigration)", 
+                                  "Party + Soc Lib R, Econ Lib D\n(LGBTQ)",
+                                  "Party + Econ Lib R, Soc Lib D\n(Immigration)",
+                                  "Party + Econ Lib R, Soc Lib D\n(LGBTQ)"), 
+                    interval = TRUE,
+                    robust=T, 
+                    legend.main = "Condition",
+                    data = wdata) + 
+  ggtheme +
+  scale_y_continuous(breaks=seq(0,1,0.2), limits=c(0, 1)) + 
+  scale_x_continuous(breaks=seq(0,1,0.2)) + 
+  theme(aspect.ratio=1, 
+        plot.title = element_text(hjust = 0.5)) +  
+  labs(title = "Comparative Candidate FT Ratings\nby Condition (Linear)",
+       x = "Authoritarianism",
+       y = "Evaluate R More Positively than D")
+
+```
+
+## Candidate trait attribution difference model fit and conditional effects
+
+The third analysis averaged respondents' ratings of each candidate on
+effectiveness and shared values. Then the Republican candidate average
+minus the Democratic candidate average was computed (with the difference
+score recoded 0-1). This served as the dependent measure.
+
+Again, we get the expected result:
+
+```{r message=FALSE}
+
+# fit
+m3 <- lm(bsdif2 ~ female+age+rinc+college+jewish+cath+other+raut*cond, 
+         data=wdata)
+coeftest(m3, vcovHC(m3, type = "HC3"))
+
+# conditional effects
+sim_margins(m3, pred = raut, modx = cond, robust=T) 
+
+```
+
+Plotting this:
+
+```{r message=FALSE, fig.width=11, fig.height=8}
+
+interact_plot(m3, pred = raut, 
+                    modx = cond,
+                    modx.labels=c("Party Only", 
+                                  "Party + Soc Lib R, Econ Lib D\n(Immigration)", 
+                                  "Party + Soc Lib R, Econ Lib D\n(LGBTQ)",
+                                  "Party + Econ Lib R, Soc Lib D\n(Immigration)",
+                                  "Party + Econ Lib R, Soc Lib D\n(LGBTQ)"), 
+                    interval = TRUE,
+                    robust=T, 
+                    legend.main = "Condition",
+                    data = wdata) + 
+  ggtheme +
+  scale_y_continuous(breaks=seq(0,1,0.2), limits=c(0, 1)) + 
+  scale_x_continuous(breaks=seq(0,1,0.2)) + 
+  theme(aspect.ratio=1, 
+        plot.title = element_text(hjust = 0.5)) +  
+  labs(title = "Comparative Candidate Traits\nby Condition (Linear)",
+       x = "Authoritarianism",
+       y = "Attribute More Positive Traits to R than D")
+
+```
+
+So, for the most part, we find what we expected in the full version of the
+experiment.
+
+## Collapsing the Treatments
+
+Now, the differences between the LGBT and immigration versions of the treatments are not terribly profound, so I also collapsed conditions 1+2 and conditions 3+4. This gives us the following simplified setup:
+
+-   control = party only
+-   treat1 = party + social lib R, econ lib D
+-   treat2 = party + econ lib R, social lib D
+
+The results are somewhat clearer in the collapsed setup, as shown below. (The variable for collapsed condition is 'condc'.)
+
+## Vote choice model fit and conditional effects (collapsed)
+
+Here, we see more or less what we expected. There is a clear positive
+relation between authoritarianism and Republican vote preference in the
+control condition, and this remains more or less the same in the
+collapsed condition where the Republican is NOT socially liberal.
+However, the effect of authoritarianism drops in the collapsed condition
+where the Republican is socially liberal:
+
+```{r message=FALSE}
+
+# fit
+m1c <- lm(rvc ~ female+age+rinc+college+jewish+cath+other+raut*condc, data=wdata)
+coeftest(m1c, vcovHC(m1c, type = "HC3"))
+
+# conditional effects
+sim_margins(m1c, pred = raut, modx = condc, robust=T) 
+
+```
+
+Plotting this:
+
+```{r message=FALSE, fig.width=11, fig.height=8}
+
+interact_plot(m1c, pred = raut, 
+                     modx = condc,
+                     modx.labels=c("Party Only", 
+                                   "Party + Soc Lib R, Econ Lib D", 
+                                   "Party + Econ Lib R, Soc Lib D"), 
+                     interval = TRUE,
+                     robust=T, 
+                     legend.main = "Condition",
+                     data = wdata) + 
+  ggtheme +
+  scale_y_continuous(breaks=seq(0,1,0.2), limits=c(0, 1)) + 
+  scale_x_continuous(breaks=seq(0,1,0.2)) + 
+  theme(aspect.ratio=1, 
+        plot.title = element_text(hjust = 0.5)) +  
+  labs(title = "Candidate Support by Condition (Linear)",
+       x = "Authoritarianism",
+       y = "Support for Republican Candidate")
+
+```
+
+## Feeling thermometer difference model fit and conditional effects (collapsed)
+
+The second analysis used the Republican candidate FT minus the
+Democratic candidate FT (with the difference score recoded 0-1) as the
+dependent measure.
+
+The results are more or less the same as above:
+
+```{r message=FALSE}
+
+# fit
+m2c <- lm(ftdif ~ female+age+rinc+college+jewish+cath+other+raut*condc, 
+         data=wdata)
+coeftest(m2c, vcovHC(m2c, type = "HC3"))
+
+# conditional effects
+sim_margins(m2c, pred = raut, modx = condc, robust=T) 
+
+```
+
+Plotting this:
+
+```{r message=FALSE, fig.width=11, fig.height=8}
+
+interact_plot(m2c, pred = raut, 
+                     modx = condc,
+                     modx.labels=c("Party Only", 
+                                   "Party + Soc Lib R, Econ Lib D", 
+                                   "Party + Econ Lib R, Soc Lib D"), 
+                     interval = TRUE,
+                     robust=T, 
+                     legend.main = "Condition",
+                     data = wdata) + 
+  ggtheme +
+  scale_y_continuous(breaks=seq(0,1,0.2), limits=c(0, 1)) + 
+  scale_x_continuous(breaks=seq(0,1,0.2)) + 
+  theme(aspect.ratio=1, 
+        plot.title = element_text(hjust = 0.5)) +  
+  labs(title = "Comparative Candidate FT Ratings\nby Condition (Linear)",
+       x = "Authoritarianism",
+       y = "Evaluate R More Positively than D")
+
+```
+
+## Candidate trait attribution difference model fit and conditional effects (collapsed)
+
+The third analysis averaged respondents' ratings of each candidate on
+effectiveness and shared values. Then the Republican candidate average
+minus the Democratic candidate average was computed (with the difference
+score recoded 0-1). This served as the dependent measure.
+
+As before, we get the expected result:
+
+```{r message=FALSE}
+
+# fit
+m3c <- lm(bsdif2 ~ female+age+rinc+college+jewish+cath+other+raut*condc, 
+         data=wdata)
+coeftest(m3c, vcovHC(m3c, type = "HC3"))
+
+# conditional effects
+sim_margins(m3c, pred = raut, modx = condc, robust=T) 
+
+```
+
+Plotting this:
+
+```{r message=FALSE, fig.width=11, fig.height=8}
+
+interact_plot(m3c, pred = raut, 
+                     modx = condc,
+                     modx.labels=c("Party Only", 
+                                   "Party + Soc Lib R, Econ Lib D", 
+                                   "Party + Econ Lib R, Soc Lib D"), 
+                     interval = TRUE,
+                     robust=T, 
+                     legend.main = "Condition",
+                     data = wdata) + 
+  ggtheme +
+  scale_y_continuous(breaks=seq(0,1,0.2), limits=c(0, 1)) + 
+  scale_x_continuous(breaks=seq(0,1,0.2)) + 
+  theme(aspect.ratio=1, 
+        plot.title = element_text(hjust = 0.5)) +  
+  labs(title = "Comparative Candidate Traits\nby Condition (Linear)",
+       x = "Authoritarianism",
+       y = "Attribute More Positive Traits to R than D")
+
+```
+
+## In Sum
+
+All in all, Experiment 2 produced results that were consistent with our
+predictions and which conceptually replicated the reversed design we
+used in Experiment 1. I think these two experiments would form a good
+core for an experimental chapter that we could put right after the panel
+data chapter.

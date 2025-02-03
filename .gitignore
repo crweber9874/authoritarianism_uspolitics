@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+clean_data
+archive
+*.rda
+*.RData
+*.csv
+*.pdf
+renv
+Dockerfile
