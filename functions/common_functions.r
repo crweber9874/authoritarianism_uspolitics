@@ -1,8 +1,8 @@
 ## Scale variables from 0-1
 
 zero.one <- function(x) {
-  min.x <- min(x, na.rm = T)
-  max.x <- max(x - min.x, na.rm = T)
+  min.x <- min(x, na.rm = TRUE)
+  max.x <- max(x - min.x, na.rm = TRUE)
   return((x - min.x) / max.x)
 }
 
@@ -16,40 +16,23 @@ for (package in required_packages) {
     library(package, character.only = TRUE)
   }
 }
-ggtheme <- theme(
-  plot.title = element_text(face = "bold", hjust = -.08, vjust = 0, colour = "#3C3C3C", size = 12),
-  axis.text.x = element_text(size = 9, colour = "#535353", face = "bold"),
-  axis.text.y = element_text(size = 9, colour = "#535353", face = "bold"),
-  axis.title.y = element_text(size = 11, colour = "#535353", face = "bold", vjust = 1.5),
-  axis.ticks = element_blank(),
-  panel.grid.major = element_line(colour = "#D0D0D0", linewidth = 1),
-  panel.background = element_rect(fill = "white")
-)
-
-for (package in required_packages) {
-  if (!require(package, character.only = TRUE)) {
-    install.packages(package, dependencies = TRUE)
-    library(package, character.only = TRUE)
-  }
-}
 
 # General GG theme
 ggtheme <- theme(
-  plot.title = element_text(face = "bold", hjust = 0.5, vjust = 0.5, colour = "#3C3C3C", size = 15),
-  axis.text.x = element_text(size = 13, colour = "#535353", face = "bold"),
-  axis.text.y = element_text(size = 13, colour = "#535353", face = "bold"),
-  axis.title = element_text(size = 13, colour = "#535353", face = "bold"),
-  axis.title.y = element_text(size = 13, colour = "#535353", face = "bold", vjust = 1.5),
-  axis.ticks = element_blank(),
-  strip.text.x = element_text(size = 13),
-  panel.grid.major = element_line(colour = "#D0D0D0", size = .25),
+  plot.title = element_text(colour = "black", size = 10),
+  axis.text.x = element_text(size = 10, colour = "#535353", face = "bold"),
+  axis.text.y = element_text(size = 10, colour = "#535353", face = "bold"),
+  axis.title = element_text(size = 10, colour = "#535353", face = "bold"),
+  axis.title.y = element_text(size = 10, colour = "black", face = "bold", vjust = 1.5),
+  axis.ticks.x = element_line(size = 0.5, colour = "#535353"), # Changed x-axis ticks
+  axis.ticks.y = element_blank(),
+  strip.text.x = element_text(size = 10),
+  panel.grid.major = element_line(colour = "#D0D0D0", size = 0.25),
   panel.background = element_rect(fill = "white"),
-  legend.text = element_text(size = 14),
-  legend.title = element_text(size = 16)
+  legend.text = element_text(size = 10),
+  legend.title = element_text(size = 10),
 )
 
-
-# BRMS Estimation Function
 
 logit_linear_models <- function(data = ANES_2020, dependent.variable = "trans.military",
                                 independent.variables = c("female", "age", "college", "income", "authoritarianism"),
@@ -62,14 +45,7 @@ logit_linear_models <- function(data = ANES_2020, dependent.variable = "trans.mi
     library(brms)
   }
 
-
-  model_type <- NA
-  if (model == "logit_model") {
-    model_type <- "bernoulli"
-  }
-  if (model == "linear_model") {
-    model_type <- "gaussian"
-  }
+  model_type <- ifelse(model == "logit_model", "bernoulli", "gaussian")
 
   # Misc Functions
   firstL <- function(x) {
@@ -109,9 +85,10 @@ logit_linear_models <- function(data = ANES_2020, dependent.variable = "trans.mi
       add_epred_draws(fit)
     # The plot
     plot <- predData %>% ggplot(aes(x = authoritarianism, y = .epred, color = "black")) +
-      stat_summary(fun = median, geom = "point", shape = 20, size = 5, color = "black") +
+      stat_summary(fun = median, geom = "point", size = 3, color = "black", alpha = 0.8) +
       ggtheme +
-      geom_point(size = 1.5, alpha = 0.05, shape = 18, color = "black") +
+      scale_x_continuous(breaks = seq(0, 1, by = 0.5)) +
+      geom_point(size = 1.5, alpha = 0.05, color = "black") +
       ggtitle(firstL(race)) +
       theme(legend.key = element_blank())
     return(plot)
@@ -126,20 +103,12 @@ logit_linear_models <- function(data = ANES_2020, dependent.variable = "trans.mi
 # dependent variable, outcome.name
 predPlot <- function(RACE = c("white", "black", "latino"), plot.title = "trans.military", dependent.variable = "trans.military",
                      data = ANES_2020, y.limits = c(0, 0.5), plot.y = "logit", ...) {
-  for (race in c("white", "black", "latino")) {
+  for (race in RACE) {
     assign(paste0("race_", race), logit_linear_models(ANES_2020, dependent.variable = dependent.variable, race = race, ...))
   }
-  #   Construct the cowplot
+  # Construct the cowplot
 
-  y.label <- NA
-  if (plot.y == "logit") {
-    y.label <- paste0("Pr(", plot.title, ")")
-  }
-  if (plot.y == "linear") {
-    y.label <- paste0(plot.title)
-  }
-
-  # new line
+  y.label <- ifelse(plot.y == "logit", paste0("Pr(", plot.title, ")"), plot.title)
 
   row.grid <- plot_grid(
     race_white + xlab("") + theme(legend.position = "none") + ylab(y.label) + ylim(y.limits),
@@ -171,7 +140,6 @@ predPlot <- function(RACE = c("white", "black", "latino"), plot.title = "trans.m
   return(plot)
 }
 
-
 multinomial_model <- function(data = ANES_full, dependent.variable = "pid3",
                               independent.variables = c("female", "age", "college", "income", "authoritarianism"),
                               race = "white",
@@ -189,23 +157,4 @@ multinomial_model <- function(data = ANES_full, dependent.variable = "pid3",
       paste(toupper(substring(y, 1, 1)), substring(y, 2, nchar(y)), sep = "")
     })
   }
-
-
- firstL <- function(x) {
-      sapply(x, function(y) {
-        paste(toupper(substring(y, 1, 1)), substring(y, 2, nchar(y)), sep = "")
-      })
- }
- # General GG theme
-ggtheme = theme(
-        plot.title=element_text(face="bold",hjust=0.5,vjust=0.5,colour="#3C3C3C",size=15),
-        axis.text.x=element_text(size=13,colour="#535353",face="bold"),
-        axis.text.y=element_text(size=13,colour="#535353",face="bold"),
-        axis.title = element_text(size=13,colour="#535353",face="bold"),
-        axis.title.y=element_text(size=13,colour="#535353",face="bold",vjust=1.5),
-        axis.ticks=element_blank(),
-        strip.text.x = element_text(size = 13),
-        panel.grid.major=element_line(colour="#D0D0D0",size=.25),
-        panel.background=element_rect(fill="white"),
-        legend.text=element_text(size=14),
-        legend.title=element_text(size=16))
+}

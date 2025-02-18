@@ -10,3 +10,4 @@ archive
 *.pdf
 renv
 Dockerfile
+*.xlsx
