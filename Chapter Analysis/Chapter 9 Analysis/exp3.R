@@ -266,7 +266,7 @@ me2<-ggeffects::hypothesis_test(me1)
 me2[c(1, 14, 23, 28),]
 
 # plot, figure 1
-f8 <- plot_model(m1q, vcov.type = "HC3",
+f92 <- plot_model(m1q, vcov.type = "HC3",
                   type = "pred", line.size=.5,
                   terms = c("cond", "raut [0, 1]")) + 
   ggtheme +
@@ -282,8 +282,8 @@ f8 <- plot_model(m1q, vcov.type = "HC3",
   labs(title = "Candidate Support by Condition",
        x = "",
        y = "Support for Conservative Candidate")
-f8$layers[[2]]$geom_params$width <- 0.05
-ggsave(file="f8.png", f8, width = 10, height = 6)
+f92$layers[[2]]$geom_params$width <- 0.05
+ggsave(file="f92.png", f92, width = 10, height = 6)
 
 # fit -- three way interaction with party ID
 m2q <- lm(rcsup2 ~ female+age+rinc+college+jewish+cath+other+raut*cond*pid3+
@@ -317,7 +317,7 @@ wdata$pid3r<-factor(wdata$pid3, labels = c("Democratic Respondents",
 m2qr <- lm(rcsup2 ~ female+age+rinc+college+jewish+cath+other+raut*cond*pid3r+
             I(raut^2)*cond*pid3r, data=wdata)
 # plot
-f9 <- plot_model(m2qr, vcov.type = "HC3",
+f93 <- plot_model(m2qr, vcov.type = "HC3",
                   type = "pred", line.size=.5,
                   terms = c("cond", "raut [0, 1]", 
                             "pid3r [Democratic Respondents, Republican Respondents]")) + 
@@ -335,9 +335,9 @@ f9 <- plot_model(m2qr, vcov.type = "HC3",
   labs(title = "Candidate Support by Condition",
        x = "",
        y = "Support for Conservative Candidate")
-f9$layers[[2]]$geom_params$width <- 0.05
-f9$facet$params$nrow=2
-ggsave(file="f9.png", f9, width =10, height = 10)
+f93$layers[[2]]$geom_params$width <- 0.05
+f93$facet$params$nrow=2
+ggsave(file="f93.png", f93, width =10, height = 10)
 
 # table of results
 # re-estimate with lm_robust() to get objects with correct SEs

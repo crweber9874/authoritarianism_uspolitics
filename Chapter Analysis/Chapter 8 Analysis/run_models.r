@@ -13,8 +13,8 @@ library(cowplot)
 
 set.seed(32)
 
-load("~/clean/cumulativeANES_White.rda")
-source("functions/common_functions.r")
+load("/Users/Chris/Dropbox/github_repos/Authoritarianism_book/authoritarianism_uspolitics/clean_data/cumulativeANES_White.rda")
+source("/Users/Chris/Dropbox/github_repos/Authoritarianism_book/authoritarianism_uspolitics/functions/common_functions.r")
 
 # Some recodes
 data$authoritarianism <- (rowMeans(cbind(data$auth.1, data$auth.2, data$auth.3, data$auth.4), na.rm = T) - 1)
@@ -57,6 +57,7 @@ dim(data)
 filteredData <- data %>%
   mutate(confused = ifelse(ideologyR < ideologyD, 1, 0)) %>%
   filter(confused == 0)
+
 # This is Figure 1
 polarization <- brm(
   difference ~ female + age + college + income + jewish +
@@ -248,6 +249,6 @@ ch8models <- list(
 )
 
 
-my_list <- list(model = spatialModel, data = spatial_dat)
+my_list <- list(model = ch8models, data = spatial_dat)
 
-save(my_list, file = "~/Chapter 8 Analysis/spatialModel.rda")
+save(ch8models, file = "/Users/Chris/Dropbox/github_repos/Authoritarianism_book/authoritarianism_uspolitics/Chapter Analysis/Chapter 8 Analysis/spatialModel.rda")
