@@ -13,8 +13,8 @@ library(cowplot)
 
 set.seed(32)
 
-load("/Users/Chris/Dropbox/github_repos/Authoritarianism_book/authoritarianism_uspolitics/clean_data/cumulativeANES_White.rda")
-source("/Users/Chris/Dropbox/github_repos/Authoritarianism_book/authoritarianism_uspolitics/functions/common_functions.r")
+load("~/Authoritarianism_book/authoritarianism_uspolitics/clean_data/cumulativeANES_White.rda")
+source("~/Authoritarianism_book/authoritarianism_uspolitics/functions/common_functions.r")
 
 # Some recodes
 data$authoritarianism <- (rowMeans(cbind(data$auth.1, data$auth.2, data$auth.3, data$auth.4), na.rm = T) - 1)
@@ -251,4 +251,4 @@ ch8models <- list(
 
 my_list <- list(model = ch8models, data = spatial_dat)
 
-save(ch8models, file = "/Users/Chris/Dropbox/github_repos/Authoritarianism_book/authoritarianism_uspolitics/Chapter Analysis/Chapter 8 Analysis/spatialModel.rda")
+save(ch8models, file = "~/Authoritarianism_book/authoritarianism_uspolitics/Chapter Analysis/Chapter 8 Analysis/spatialModel.rda")

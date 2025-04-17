@@ -8,7 +8,7 @@ data$group <- ifelse(data$white == 1, 1, 0)
 data$group <- ifelse(data$black == 1, 2, data$group)
 data$group <- ifelse(data$hispanic == 1, 3, data$group)
 
-#### This book focuses on the White electorate, truncate to only include non hispanic whites
+
 
 data <- subset(data, group == 1)
 #### Drop mids

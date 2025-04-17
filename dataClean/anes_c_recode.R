@@ -61,21 +61,21 @@ west <- car::recode(anes$VCF0112, "1=0; 2=0; 3=0; 4=1; else=NA")
 
 ## Evaluations of groups
 ideology.dems <- car::recode(anes$VCF0503, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # ideology democratic party
-ideology.reps <- car::recode(anes$VCF0504, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # ideology democratic party
+ideology.reps <- car::recode(anes$VCF0504, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # ideology Republican party
 knowledge.ideology <- rep(NA, length(ideology.dems))
 knowledge.ideology[ideology.reps > ideology.dems] <- 1
 knowledge.ideology[ideology.reps <= ideology.dems] <- 0
 
 ## Insurance plan
 insurance.dems <- car::recode(anes$VCF0508, "0=NA; 8=NA") # Private insurance plan, Dems
-insurance.reps <- car::recode(anes$VCF0509, "0=NA; 8=NA") # Private insurance plan, Dems
+insurance.reps <- car::recode(anes$VCF0509, "0=NA; 8=NA") # Private insurance plan, Reps
 knowledge.insurance <- rep(NA, length(insurance.dems))
 knowledge.insurance[insurance.reps > insurance.dems] <- 1
 knowledge.insurance[insurance.reps <= insurance.dems] <- 0
 
 ## Guaranteed jobs and standard of living
 government.dems <- car::recode(anes$VCF0513, "0=NA; 8=NA; 9=NA") # Government living, Dems
-government.reps <- car::recode(anes$VCF0514, "0=NA; 8=NA; 9=NA") # Government living, Dems
+government.reps <- car::recode(anes$VCF0514, "0=NA; 8=NA; 9=NA") # Government living, Reps
 knowledge.government <- rep(NA, length(government.dems))
 knowledge.government[government.reps > government.dems] <- 1
 knowledge.government[government.reps <= government.dems] <- 0
@@ -90,8 +90,9 @@ feel.black <- ifelse(anes$VCF0206 >= 97, NA, anes$VCF0206)
 feel.latino <- ifelse(anes$VCF0217 >= 97, NA, anes$VCF0217)
 feel.asian <- ifelse(anes$VCF0227 >= 97, NA, anes$VCF0227)
 
-aid.blacks <- car::recode(anes$VCF0830, "0=NA; 8=NA; 9=NA") # Government living, Dems
-affirmatve.action <- car::recode(anes$VCF0867a, "1=1; 2=2; 4=3;  5=4; 7=NA; 8=NA; 9=NA") # Government living, Dems
+aid.blacks <- car::recode(anes$VCF0830, "0=NA; 8=NA; 9=NA")
+
+affirmatve.action <- car::recode(anes$VCF0867a, "1=1; 2=2; 4=3;  5=4; 7=NA; 8=NA; 9=NA")
 
 ## Government services, coded in conservative direction
 gov.dems <- car::recode(anes$VCF0541, "1=7; 2=6; 3=5; 4=4; 5=3; 6=2; 7=1; 0=NA; 8=NA; 9=NA") # Services, Dems
@@ -788,8 +789,8 @@ jobs <- recode(data$V201255, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # Gov
 jobsCD <- recode(data$V201256, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # Government should see to jobs and standard of living, conservative direction
 jobsCR <- recode(data$V201257, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # Government should see to jobs and standard of living, conservative direction
 public.insurance <- recode(data$V201252, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # Private insurance plan
-public.insuranceCD <- recode(data$V201253, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # Private insurance plan
-public.insuranceCR <- recode(data$V201254, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # Private insurance plan
+public.insuranceCD <- recode(data$V201253, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # public insurance plan
+public.insuranceCR <- recode(data$V201254, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") # public insurance plan
 aid.blacks <- recode(data$V201258, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA")
 aid.blacksCD <- recode(data$V201259, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") #
 aid.blacksCR <- recode(data$V201260, "1=1; 2=2; 3=3; 4=4; 5=5; 6=6; 7=7; else=NA") #

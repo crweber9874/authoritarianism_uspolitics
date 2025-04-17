@@ -96,11 +96,7 @@ logit_linear_models <- function(data = ANES_2020, dependent.variable = "trans.mi
 }
 
 
-## Create the final plot for each item
-## Function input
-# race values
-# plot labels and styling,
-# dependent variable, outcome.name
+
 predPlot <- function(RACE = c("white", "black", "latino"), plot.title = "trans.military", dependent.variable = "trans.military",
                      data = ANES_2020, y.limits = c(0, 0.5), plot.y = "logit", ...) {
   for (race in RACE) {
@@ -119,7 +115,6 @@ predPlot <- function(RACE = c("white", "black", "latino"), plot.title = "trans.m
     align = "v",
     axis = "b"
   )
-  ### Draw a title and combine with row.grid
 
   title <- ggdraw() +
     draw_label(
